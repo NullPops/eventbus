@@ -57,7 +57,7 @@ interface SubscriptionHandle {
 class EventBus(
     name: String = "eventbus"
 ) {
-    private val logger = Logger(name)
+    private val logger = Logger("Events[$name]")
 
     // Mutable lists kept sorted by priority (desc). Synchronized per-list for updates.
     private val subscribers =
@@ -68,11 +68,11 @@ class EventBus(
         ConcurrentHashMap<Class<*>, Array<Subscription<out Any>>>()
 
     @Suppress("UNUSED")
-    /** Post a payload (convenience). Returns number of handlers invoked. */
-    fun <T : Any> post(payload: T): Int = post(EventEnvelope(payload))
+    /** Publish a payload (convenience). Returns number of handlers invoked. */
+    fun <T : Any> publish(payload: T): Int = publish(EventEnvelope(payload))
 
-    /** Post an envelope. Returns number of handlers invoked. */
-    fun <T : Any> post(envelope: EventEnvelope<T>): Int {
+    /** Publish an envelope. Returns number of handlers invoked. */
+    fun <T : Any> publish(envelope: EventEnvelope<T>): Int {
         val key: Class<T> = envelope.payload.javaClass
         val snapshot = roSnapshots[key] ?: return 0
 
@@ -160,5 +160,5 @@ class EventBus(
 }
 
 @Suppress("UNUSED")
-/** Optional: a shared bus similar to your old global val. */
+/** Main sub/pub handler */
 val GlobalEventBus = EventBus(name = "main")

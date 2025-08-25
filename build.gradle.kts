@@ -1,15 +1,16 @@
+import org.jreleaser.gradle.plugin.tasks.JReleaserDeployTask
 import org.jreleaser.model.Active
 import org.jreleaser.model.Signing
 
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm")
     `java-library`
     `maven-publish`
-    id("org.jreleaser") version "1.19.0"
+    id("org.jreleaser")
 }
 
 group = "io.github.nullpops"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -20,18 +21,22 @@ java {
     withJavadocJar()
 }
 
-val kotlin_coroutines = "1.10.2"
-val logger = "1.0.1"
-
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlin_coroutines")
-    implementation("io.github.nullpops:logger:$logger")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    with (libs) {
+        implementation(kotlinx.coroutines.core.jvm)
+        implementation(logger)
+        testImplementation(platform(junit.bom))
+        testImplementation(junit.jupiter)
+    }
+
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<JReleaserDeployTask> {
+    dependsOn("publish")
 }
 
 publishing {
@@ -79,6 +84,7 @@ publishing {
 
 jreleaser {
     signing {
+        dryrun = false
         active.set(Active.ALWAYS)
         armored.set(true)
         mode = Signing.Mode.MEMORY
@@ -94,7 +100,7 @@ jreleaser {
     deploy {
         maven {
             mavenCentral {
-                create("logger") {
+                create("eventbus") {
                     active.set(Active.ALWAYS)
                     url.set("https://central.sonatype.com/api/v1/publisher")
                     stagingRepository("build/staging-deploy")
